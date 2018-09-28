@@ -28,6 +28,7 @@ import com.anchorage.docks.node.ui.DockUIPanel;
 import com.anchorage.docks.stations.DockStation;
 import com.anchorage.docks.stations.DockSubStation;
 import com.sun.javafx.css.StyleManager;
+import javafx.geometry.Dimension2D;
 import javafx.scene.Parent;
 
 import java.util.ArrayList;
@@ -98,12 +99,12 @@ public class AnchorageSystem {
         }
     }
 
-    public static void searchTargetNode(double x, double y) {
+    public static void searchTargetNode(double x, double y, Dimension2D paneSize) {
         
         if (currentStationFromDrag.isCommonStation() && !currentStationFromDrag.isSubStation()) {
-            stations.stream().filter(s -> s.isCommonStation()).forEach(s -> s.searchTargetNode(x, y));
+            stations.stream().filter(s -> s.isCommonStation()).forEach(s -> s.searchTargetNode(x, y, paneSize));
         } else {
-            currentStationFromDrag.searchTargetNode(x, y);
+            currentStationFromDrag.searchTargetNode(x, y, paneSize);
         }
     }
 

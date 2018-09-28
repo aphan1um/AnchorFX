@@ -31,6 +31,8 @@ import com.anchorage.docks.containers.zones.ZoneSelector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javafx.geometry.Dimension2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -128,7 +130,7 @@ public final class DockStation extends SingleDockContainer {
         }
     }
 
-    public void searchTargetNode(double x, double y) {
+    public void searchTargetNode(double x, double y, Dimension2D paneSize) {
 
         selected = false;
         
@@ -144,8 +146,10 @@ public final class DockStation extends SingleDockContainer {
 
         nodeTarget.map(node -> (Runnable) () -> {
 
-            currentNodeTarget = node;
-            dockZones.moveAt(node);
+            if (node != null) {
+                currentNodeTarget = node;
+                dockZones.moveAt(node);
+            }
 
         }).orElse((Runnable) () -> {
 
@@ -156,7 +160,8 @@ public final class DockStation extends SingleDockContainer {
 
         }).run();
 
-        selected = dockZones.searchArea(x, y);
+        if (dockZones.getCurrentNodeTarget() != null)
+            selected = dockZones.searchArea(x, y, paneSize);
     }
 
     public void addOverlay(Node node) {
@@ -178,7 +183,6 @@ public final class DockStation extends SingleDockContainer {
     }
 
     public void finalizeDrag() {
-
         if (currentNodeMaximized != null) {
             return;
         }
@@ -191,14 +195,62 @@ public final class DockStation extends SingleDockContainer {
         else {
             DockNode.DockPosition position = selector.getPosition();
             if (selector.isStationZone()) {
-                dockZones.getNodeSource().undock();
-                dockZones.getNodeSource().dock(this, position);
+                dockNode(position, this, dockZones);
             }
             else {
                 manageDockDestination();
             }
         }
- 
+    }
+
+    private void dockNode(DockNode.DockPosition pos, DockStation station, DockZones zone) {
+        zone.getNodeSource().undock();
+
+        double min_check = 0;
+        switch (pos) {
+            case LEFT:
+            case RIGHT:
+                min_check = zone.getNodeSource().getWidth() / station.getWidth();
+                break;
+            default:
+                min_check = zone.getNodeSource().getHeight() / station.getHeight();
+        }
+
+        switch (pos) {
+            case BOTTOM:
+            case RIGHT:
+                zone.getNodeSource().dock(station, pos,
+                        Math.max(0.5, 1 - min_check));
+                break;
+            default:
+                zone.getNodeSource().dock(station, pos,
+                        Math.min(0.5, min_check));
+        }
+    }
+
+    private void dockNode(DockNode.DockPosition pos, DockNode node, DockZones zone) {
+        zone.getNodeSource().undock();
+
+        double min_check = 0;
+        switch (pos) {
+            case LEFT:
+            case RIGHT:
+                min_check = zone.getNodeSource().getWidth() / node.getWidth();
+                break;
+            default:
+                min_check = zone.getNodeSource().getHeight() / node.getHeight();
+        }
+
+        switch (pos) {
+            case BOTTOM:
+            case RIGHT:
+                zone.getNodeSource().dock(node, pos,
+                        Math.max(0.5, 1 - min_check));
+                break;
+            default:
+                zone.getNodeSource().dock(node, pos,
+                        Math.min(0.5, min_check));
+        }
     }
 
     public void closeZones()
@@ -207,7 +259,6 @@ public final class DockStation extends SingleDockContainer {
     }
     
     private void manageDockDestination() {
-
         if (dockZones.getCurrentNodeTarget() == dockZones.getNodeSource()) {
             if (dockZones.getCurrentNodeTarget().getParentContainer() instanceof DockTabberContainer
                     && dockZones.getCurrentPosition() != DockNode.DockPosition.CENTER) {
@@ -218,8 +269,9 @@ public final class DockStation extends SingleDockContainer {
             }
         }
         else {
-            dockZones.getNodeSource().undock();
-            dockZones.getNodeSource().dock(dockZones.getCurrentNodeTarget(), dockZones.getCurrentPosition());
+            dockNode(dockZones.getCurrentPosition(), dockZones.getCurrentNodeTarget(), dockZones);
+            //dockZones.getNodeSource().undock();
+            //dockZones.getNodeSource().dock(dockZones.getCurrentNodeTarget(), dockZones.getCurrentPosition());
         }
     }
 

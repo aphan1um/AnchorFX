@@ -28,6 +28,7 @@ import com.anchorage.system.AnchorageSystem;
 import java.util.Objects;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Bounds;
+import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import javafx.scene.CacheHint;
 import javafx.scene.Node;
@@ -94,7 +95,7 @@ public final class DockUIPanel extends Pane {
         commandsBox = new DockCommandsBox(node);
         barPanel.getChildren().add(commandsBox);
 
-        commandsBox.layoutXProperty().bind(barPanel.prefWidthProperty().subtract(commandsBox.getChildren().size() * 30 + 10));
+        commandsBox.layoutXProperty().bind(barPanel.prefWidthProperty().subtract(commandsBox.getChildren().size() * 30 + 20));
         commandsBox.setLayoutY(0);
 
         titleLabel.prefWidthProperty().bind(commandsBox.layoutXProperty().subtract(10));
@@ -118,6 +119,9 @@ public final class DockUIPanel extends Pane {
         });
 
         barPanel.setOnMouseDragged(event -> {
+            if (node.interactableProperty().getValue() == false)
+                return;
+
             if (event.getButton() == MouseButton.PRIMARY) {
                 manageDragEvent(event);
             }
@@ -150,7 +154,8 @@ public final class DockUIPanel extends Pane {
                                        event.getScreenY() - deltaDragging.getY());
 
                     //node.stationProperty().get().searchTargetNode(event.getScreenX(), event.getScreenY());
-                    AnchorageSystem.searchTargetNode(event.getScreenX(), event.getScreenY());
+                    AnchorageSystem.searchTargetNode(event.getScreenX(), event.getScreenY(),
+                            new Dimension2D(getWidth(), getHeight()));
                 }
             }
         }

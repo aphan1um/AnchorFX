@@ -33,6 +33,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
+import javafx.geometry.Dimension2D;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -241,8 +242,7 @@ public final class DockZones extends Stage {
         }
     }
 
-    public boolean searchArea(double x, double y) {
-
+    public boolean searchArea(double x, double y, Dimension2D paneSize) {
         checkVisibilityConditions();
 
         ZoneSelector selector = selectors.stream()
@@ -254,7 +254,7 @@ public final class DockZones extends Stage {
 
         if (selector != null && selector != currentZoneSelector) {
             currentZoneSelector = selector;
-            makePreview(currentZoneSelector, currentNodeTarget);
+            makePreview(currentZoneSelector, currentNodeTarget, paneSize);
             currentPosition = currentZoneSelector.getPosition();
              
         }
@@ -317,13 +317,13 @@ public final class DockZones extends Stage {
         }
     }
 
-    private void showPreview(Bounds sceneBounds, ZoneSelector selector) {
+    private void showPreview(Bounds sceneBounds, ZoneSelector selector, Dimension2D paneSize) {
 
         if (selector.getPosition() == DockNode.DockPosition.LEFT) {
 
             rectanglePreview.setX(sceneBounds.getMinX());
             rectanglePreview.setY(sceneBounds.getMinY());
-            rectanglePreview.setWidth(sceneBounds.getWidth() / 2);
+            rectanglePreview.setWidth(Math.min(sceneBounds.getWidth() / 2, paneSize.getWidth()));
             rectanglePreview.setHeight(sceneBounds.getHeight());
         }
 
@@ -332,24 +332,24 @@ public final class DockZones extends Stage {
             rectanglePreview.setX(sceneBounds.getMinX());
             rectanglePreview.setY(sceneBounds.getMinY());
             rectanglePreview.setWidth(sceneBounds.getWidth());
-            rectanglePreview.setHeight(sceneBounds.getHeight() / 2);
+            rectanglePreview.setHeight(Math.min(sceneBounds.getHeight() / 2, paneSize.getHeight()));
 
         }
 
         if (selector.getPosition() == DockNode.DockPosition.RIGHT) {
 
-            rectanglePreview.setX(sceneBounds.getMinX() + sceneBounds.getWidth() / 2);
+            rectanglePreview.setX(sceneBounds.getMaxX() - Math.min(sceneBounds.getWidth() / 2, paneSize.getWidth()));
             rectanglePreview.setY(sceneBounds.getMinY());
-            rectanglePreview.setWidth(sceneBounds.getWidth() / 2);
+            rectanglePreview.setWidth(Math.min(sceneBounds.getWidth() / 2, paneSize.getWidth()));
             rectanglePreview.setHeight(sceneBounds.getHeight());
         }
 
         if (selector.getPosition() == DockNode.DockPosition.BOTTOM) {
 
             rectanglePreview.setX(sceneBounds.getMinX());
-            rectanglePreview.setY(sceneBounds.getMinY() + sceneBounds.getHeight() / 2);
+            rectanglePreview.setY(sceneBounds.getMaxY() - Math.min(sceneBounds.getHeight() / 2, paneSize.getHeight()));
             rectanglePreview.setWidth(sceneBounds.getWidth());
-            rectanglePreview.setHeight(sceneBounds.getHeight() / 2);
+            rectanglePreview.setHeight(Math.min(sceneBounds.getHeight() / 2, paneSize.getHeight()));
 
         }
 
@@ -373,13 +373,13 @@ public final class DockZones extends Stage {
         opacityAnimationPreview.stop();
     }
 
-    private void makePreview(ZoneSelector selector, DockNode currentNodeTarget) {
+    private void makePreview(ZoneSelector selector, DockNode currentNodeTarget, Dimension2D paneSize) {
 
         if (AnchorageSettings.isDockingPositionPreview()) {
 
             if (selector.isStationZone()) {
                 Bounds sceneBounds = ownerStation.getBoundsInParent();
-                showPreview(sceneBounds,selector);
+                showPreview(sceneBounds,selector,paneSize);
             }
             else {
                 Bounds nodeSceneBounds = currentNodeTarget.localToScene(currentNodeTarget.getBoundsInLocal());
@@ -401,7 +401,7 @@ public final class DockZones extends Stage {
                         sceneBounds.getHeight());
                     }
                 }
-                showPreview(sceneBounds,selector);
+                showPreview(sceneBounds,selector,paneSize);
             }
 
             animatePreview();
