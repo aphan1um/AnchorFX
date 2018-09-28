@@ -242,13 +242,8 @@ public final class DockZones extends Stage {
         }
     }
 
-    public boolean searchArea(double x, double y, Dimension2D paneSize) {
+    public boolean searchArea(double x, double y, Dimension2D paneSize, ZoneSelector selector) {
         checkVisibilityConditions();
-
-        ZoneSelector selector = selectors.stream()
-                .filter(s -> s.overMe(x, y) && !s.isZoneDisabled())
-                .findFirst()
-                .orElse(null);
 
         highLight(selector);
 
@@ -283,6 +278,8 @@ public final class DockZones extends Stage {
     public DockNode.DockPosition getCurrentPosition() {
         return currentPosition;
     }
+
+    public List<ZoneSelector> getSelectors() { return selectors; }
 
     private void highLight(ZoneSelector selector) {
 

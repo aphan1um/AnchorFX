@@ -160,8 +160,15 @@ public final class DockStation extends SingleDockContainer {
 
         }).run();
 
-        if (dockZones.getCurrentNodeTarget() != null)
-            selected = dockZones.searchArea(x, y, paneSize);
+
+        ZoneSelector selector = dockZones.getSelectors().stream()
+                .filter(s -> s.overMe(x, y) && !s.isZoneDisabled())
+                .findFirst()
+                .orElse(null);
+
+        if (dockZones.getCurrentNodeTarget() != null ||
+                (selector != null && selector.isStationZone()))
+            selected = dockZones.searchArea(x, y, paneSize, selector);
     }
 
     public void addOverlay(Node node) {
